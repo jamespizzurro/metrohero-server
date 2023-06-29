@@ -1,0 +1,1521 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : " <p> <strong>Welcome to MetroHero's public API documentation!</strong> Here you can browse the APIs we currently offer. To start using our APIs, you'll need to request a unique API key from us. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> to get started.</p> <p> All of our public APIs are available for free. In return, we require the following: <ul> <li> You must abide by <a href='https://developer.wmata.com/license' target='_blank'>WMATA's Transit Data Terms of Use</a>; by using our APIs, you agree to these terms of service. </li> <li> Any data returned by or derived from data returned by our APIs must be freely available to all users of your application. Any paywalled application that utilizes our APIs must also provide a free tier with access to the same data returned by or derived from our APIs. </li> <li> Any data returned by or derived from data returned by our APIs must be prominently credited back to MetroHero. For example, if this data is being displayed to users on a website or in an application, MetroHero must always be visually credited wherever and whenever the data appears or is used. </li> </ul> <p> We reserve the right to revoke API access for anyone who does not abide by the above stipulatons. In fact, we reserve the right to revoke API access for any reason at any time, and cannot make any guarantees about the availability of our APIs nor the validity of the data returned by our APIs. For more information, see <a href='https://developer.wmata.com/license' target='_blank'>WMATA's Transit Data Terms of Use</a>; consider our SLA (service level agreement) the same as theirs. </p> </p> <p> By default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours. These restrictions are similar to the rate limits WMATA currently has in place for their APIs, and are subject to change in the future. If you anticipate multiple users of your application, we suggest you create your own central server as a proxy to our APIs, polling and caching our data periodically to ensure you stay below our rate limits. You can then have your clients make requests to your central server rather than our servers directly, which gives you total control over how frequently calls are made to our APIs. If you still require a higher rate limit, please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>. </p> <p> Per <a href='https://developer.wmata.com/license' target='_blank'>WMATA's Transit Data Terms of Use</a>, as of October 12th, 2017, basic user data (name, email address, API usage) may be shared with WMATA for statistical research purposes, and you may be blocked from accessing our APIs at any time, all upon WMATA's request. </p> <p> <hr/> <i> WMATA is our primary upstream data provider, but does not otherwise endorse our services nor the use of our APIs. In the event that we, MetroHero, decide to stop providing our APIs permanently or temporarily, WMATA is under no obligation to provide similar APIs. </i> <hr/> </p> ",
+    "version" : "v1",
+    "title" : "MetroHero",
+    "termsOfService" : "https://developer.wmata.com/license",
+    "contact" : {
+      "email" : "contact@dcmetrohero.com"
+    }
+  },
+  "host" : "dcmetrohero.com",
+  "basePath" : "/api/v1",
+  "schemes" : [ "https" ],
+  "paths" : {
+    "/metrorail/metrics" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "System Metrics",
+        "description" : " Gets real-time system-wide metrics, broken down by line and direction of travel. This includes everything from the number of trains and train cars to calculations like average minimum headways, train frequencies, platform wait times, and more. Data is updated about every 30 seconds. ",
+        "operationId" : "getSystemMetrics",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "System metrics successfully retrieved.",
+            "schema" : {
+              "$ref" : "#/definitions/SystemMetrics"
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the required apiKey header is specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You specified a valid request, but our servers aren't yet ready to accept it. This can happen if our servers have restarted recently, or if there is otherwise a problem with our servers. Please try again soon. Alternatively, you may have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/trips/{fromStationCode}/{toStationCode}" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Trip Info",
+        "description" : " Gets real-time trip information given current conditions. The algorithms behind this API take, when available, both current conditions and conditions in the recent past into account--including any train delays and congestion--to make predictions about how long riders may be waiting or have been waiting for the next train to service the specified trip, as well as how long the trip might take once they're aboard. <br/><br/> **Trips with station transfers are not directly supported.** For example, to get trip information from Glenmont to Vienna, split the trip up into segments (e.g. Glenmont to Metro Center, then Metro Center to Vienna) and perform a separate request to this API for each segment. You can then aggregate the results across the responses of each API request however you see fit to make your own derived predictions about the trip as a whole. ",
+        "operationId" : "getTripInfo",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "fromStationCode",
+          "in" : "path",
+          "description" : "The RTU station code of the origin station of the trip. For example, if you want to request trip info for the trip from Vienna (K08) to Metro Center (C01), you should specify K08 for this param. An unofficial list of valid Metrorail station codes can be found [here](https://docs.google.com/spreadsheets/d/1C_0fBIeA1BgyHpW34m5-KpzICXgAELT5rNKVHXWVvYc/edit?usp=sharing). Only station codes for revenue stations are supported.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "toStationCode",
+          "in" : "path",
+          "description" : "The RTU station code of the destination station of the trip. For example, if you want to request trip info for the trip from Vienna (K08) to Metro Center (C01), you should specify C01 for this param. An unofficial list of valid Metrorail station codes can be found [here](https://docs.google.com/spreadsheets/d/1C_0fBIeA1BgyHpW34m5-KpzICXgAELT5rNKVHXWVvYc/edit?usp=sharing). Only station codes for revenue stations are supported.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Trip info successfully retrieved.",
+            "schema" : {
+              "$ref" : "#/definitions/TripInfo"
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the apiKey header and all other required parameters are specified. Also make sure the trip you specified doesn't require a transfer. If it does, refer to the description of this API to learn how to handle this case."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/tweets" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Tweets",
+        "description" : "Gets the last 30 minutes' worth of Metrorail-related tweets from Twitter. These tweets may be describing a problem with a particular station or train, a general problem on a given line, or nothing meaningful at all; while we do our best using various heuristics to only include relevant tweets, we make no guarantees.",
+        "operationId" : "getTweets",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "An ordered list of tweets by the date they were tweeted; the most recent tweet will appear first in the list. This can be null.",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/Tweet"
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the required apiKey header is specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You specified a valid request, but our servers aren't yet ready to accept it. This can happen if our servers have restarted recently, or if there is otherwise a problem with our servers. Please try again soon. Alternatively, you may have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/trains" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Train Positions",
+        "description" : " Gets real-time train predictions for the entire Metrorail system. These predictions are unique per train, i.e. exactly one prediction is returned per train. This API is intended to be used as an alternative to [WMATA's Train Positions API](https://developer.wmata.com/docs/services/5763fa6ff91823096cac1057/operations/5763fb35f91823096cac1058), but does not return the exact same data, nor is it in the same format. We calculate our train predictions independently of WMATA by observing train movement over time. <br/></br> Train predictions are returned in no particular order.",
+        "operationId" : "getTrains",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Train predictions successfully retrieved.",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/TrainPrediction"
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the required apiKey header is specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/trains/tags" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Train Reports",
+        "description" : " Gets real-time rider reports, referred to as tags, for all trains. All tags are of predefined types (e.g. 'New Train', 'Crowded', 'Smooth Ride', etc) submitted by MetroHero users. These tags expire anywhere from 15 to 60 minutes after they've been created, depending on the type of tag; only current, unexpired tags are returned by this API. <br/><br/> Train tags are ordered by tag type in descending order by current number of active tags.",
+        "operationId" : "getTagsByTrain",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Train tags successfully retrieved.",
+            "schema" : {
+              "type" : "object",
+              "description" : "Train tag reports by train ID",
+              "properties" : {
+                "012" : {
+                  "$ref" : "#/definitions/TrainTags"
+                },
+                "253" : {
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the required apiKey header is specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/trains/{trainId}/tags" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Train Report",
+        "description" : " Gets real-time rider reports about a particular train, referred to as tags. All tags are of predefined types (e.g. 'New Train', 'Crowded', 'Smooth Ride', etc) submitted by MetroHero users. These tags expire anywhere from 15 to 60 minutes after they've been created, depending on the type of tag; only current, unexpired tags are returned by this API. <br/><br/> Train tags are ordered by tag type in descending order by current number of active tags.",
+        "operationId" : "getTagsForTrain",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "trainId",
+          "in" : "path",
+          "description" : "The AIMS internal ID of the train, as returned by [WMATA's Train Positions API](https://developer.wmata.com/docs/services/5763fa6ff91823096cac1057/operations/5763fb35f91823096cac1058). This should be a three-digit string anywhere from 001 to 512.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Train tags successfully retrieved.",
+            "schema" : {
+              "$ref" : "#/definitions/TrainTags"
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the apiKey header and all other required parameters are specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/stations/trains" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Train Predictions",
+        "description" : " Gets real-time and scheduled train predictions for all stations. For each station, this API returns all of the same data as [WMATA's Real-Time Rail Predictions API](https://developer.wmata.com/docs/services/547636a6f9182302184cda78/operations/547636a6f918230da855363f), but with additional real-time train predictions (including, optionally, scheduled train predictions), and additional fields for those predictions, like estimated train speed and direction of travel. We calculate our train predictions independently of WMATA by observing train movement over time. <br/></br> <strong>Disclaimer</strong>: None of the above should be interpretted as a claim that our data is more accurate, more complete, or more timely than WMATA's data, we are simply stating some of the factual differences between the two datasets; as with all our APIs, we make no claims as to the accuracy of the data returned. <br/></br> Each set of train predictions for each station is in ascending order by `minutesAway`. When the request parameter `includeScheduledPredictions` is set to false, our data can be used as a drop-in substitute for [WMATA's Real-Time Rail Predictions API](https://developer.wmata.com/docs/services/547636a6f9182302184cda78/operations/547636a6f918230da855363f).",
+        "operationId" : "getTrainsByStation",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "includeScheduledPredictions",
+          "in" : "query",
+          "description" : "True if you want predictions made using scheduled train data to be returned in addition to predictions made using real-time data, otherwise set to false and only predictions made using real-time data will be returned. The default is false if this isn't specified.",
+          "required" : false,
+          "type" : "boolean"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Train predictions successfully retrieved.",
+            "schema" : {
+              "type" : "object",
+              "description" : "Train predictions by station code",
+              "properties" : {
+                "C01" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/TrainPrediction"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the required apiKey header is specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/stations/{stationCode}/trains" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Station Train Predictions",
+        "description" : " Gets real-time and scheduled train predictions for a particular station. This API returns all of the same data as [WMATA's Real-Time Rail Predictions API](https://developer.wmata.com/docs/services/547636a6f9182302184cda78/operations/547636a6f918230da855363f), but with additional real-time train predictions (including, optionally, scheduled train predictions), and additional fields for those predictions, like estimated train speed and direction of travel. We calculate our train predictions independently of WMATA by observing train movement over time. <br/></br> <strong>Disclaimer</strong>: None of the above should be interpretted as a claim that our data is more accurate, more complete, or more timely than WMATA's data, we are simply stating some of the factual differences between the two datasets; as with all our APIs, we make no claims as to the accuracy of the data returned. <br/></br> Train predictions are returned in ascending order by `minutesAway`. When the request parameter `includeScheduledPredictions` is set to false, our data can be used as a drop-in substitute for [WMATA's Real-Time Rail Predictions API](https://developer.wmata.com/docs/services/547636a6f9182302184cda78/operations/547636a6f918230da855363f).",
+        "operationId" : "getTrainsForStation",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "stationCode",
+          "in" : "path",
+          "description" : "The RTU station code of the station. An unofficial list of valid Metrorail station codes can be found [here](https://docs.google.com/spreadsheets/d/1C_0fBIeA1BgyHpW34m5-KpzICXgAELT5rNKVHXWVvYc/edit?usp=sharing). Only station codes for revenue stations are supported. For transfer stations with two levels, like Metro Center, you can specify both of its two RTU station codes separated by a comma to get train predictions for both levels (e.g. \"A01,C01\").",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "includeScheduledPredictions",
+          "in" : "query",
+          "description" : "True if you want predictions made using scheduled train data to be returned in addition to predictions made using real-time data, otherwise set to false and only predictions made using real-time data will be returned. The default is false if this isn't specified.",
+          "required" : false,
+          "type" : "boolean"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Train predictions successfully retrieved.",
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/TrainPrediction"
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the apiKey header and all other required parameters are specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/stations/tags" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Station Reports",
+        "description" : " Gets real-time rider reports, referred to as tags, for all stations. All tags are of predefined types (e.g. 'Friendly or Helpful Staff', 'Broken Escalator', etc) and are either explicitly submitted by MetroHero users, or implicitly derived from public WMATA-related tweets on Twitter by our algorithms. These tags expire anywhere from 15 to 180 minutes after they've been created, depending on the type of tag; only current, unexpired tags are returned by this API. <br/><br/> Station tags are ordered by tag type in descending order by current number of active tags.",
+        "operationId" : "getTagsByStation",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "StationTags successfully retrieved.",
+            "schema" : {
+              "type" : "object",
+              "description" : "Station tag reports by RTU station code",
+              "properties" : {
+                "A02" : {
+                  "$ref" : "#/definitions/StationTags"
+                },
+                "C05" : {
+                  "type" : "object"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the required apiKey header is specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    },
+    "/metrorail/stations/{stationCode}/tags" : {
+      "get" : {
+        "tags" : [ "Metrorail" ],
+        "summary" : "Station Report",
+        "description" : " Gets real-time rider reports about a particular station, referred to as tags. All tags are of predefined types (e.g. 'Friendly or Helpful Staff', 'Broken Escalator', etc) and are either explicitly submitted by MetroHero users, or implicitly derived from public WMATA-related tweets on Twitter by our algorithms. These tags expire anywhere from 15 to 180 minutes after they've been created, depending on the type of tag; only current, unexpired tags are returned by this API. <br/><br/> Station tags are ordered by tag type in descending order by current number of active tags.",
+        "operationId" : "getTagsForStation",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "apiKey",
+          "in" : "header",
+          "description" : "Your unique API key, provided by us. If you don't have one yet, email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a>.",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "stationCode",
+          "in" : "path",
+          "description" : "The RTU station code of the station. An unofficial list of valid Metrorail station codes can be found [here](https://docs.google.com/spreadsheets/d/1C_0fBIeA1BgyHpW34m5-KpzICXgAELT5rNKVHXWVvYc/edit?usp=sharing). Only station codes for revenue stations are supported.",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Station tags successfully retrieved.",
+            "schema" : {
+              "$ref" : "#/definitions/StationTags"
+            }
+          },
+          "400" : {
+            "description" : "Invalid request. Make sure the apiKey header and all other required parameters are specified."
+          },
+          "401" : {
+            "description" : "You either didn't specify an API key, or the API key you specified was invalid or rejected. Please email us at <a href='mailto:contact@dcmetrohero.com' target='_blank'>contact@dcmetrohero.com</a> for assistance."
+          },
+          "503" : {
+            "description" : "You have exceeded our rate limits: by default, all users are limited to 10 calls to any of our APIs per second, and 50,000 calls per 24 hours."
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "SystemMetrics" : {
+      "type" : "object",
+      "properties" : {
+        "lineMetricsByLine" : {
+          "type" : "object",
+          "description" : "Line-specific metrics by line code.",
+          "properties" : {
+            "RD" : {
+              "type" : "object"
+            },
+            "OR" : {
+              "$ref" : "#/definitions/LineMetrics"
+            },
+            "SV" : {
+              "type" : "object"
+            },
+            "BL" : {
+              "type" : "object"
+            },
+            "YL" : {
+              "type" : "object"
+            },
+            "GR" : {
+              "type" : "object"
+            }
+          }
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this data is from.",
+          "example" : "2017-06-12T08:24:26.655-04:00"
+        }
+      }
+    },
+    "LineMetrics" : {
+      "type" : "object",
+      "description" : "Line metrics for a specific line.",
+      "properties" : {
+        "lineCode" : {
+          "type" : "string",
+          "enum" : [ "RD", "OR", "SV", "BL", "YL", "GR" ],
+          "description" : "The line code associated with this data.",
+          "example" : "OR"
+        },
+        "expectedNumTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active trains scheduled to be in revenue service, calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>.",
+          "example" : 22
+        },
+        "numTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active trains in revenue service.",
+          "example" : 22
+        },
+        "numEightCarTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active 8-car trains in revenue service.",
+          "example" : 11
+        },
+        "numDelayedTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active trains in revenue service with a cumulative trip time delay of 5 minutes or more, accumulated during their trip so far by holding and/or moving slowly.",
+          "example" : 2
+        },
+        "numCars" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of train cars in active revenue service, as calculated using `numTrains` and `numEightCarTrains`.",
+          "example" : 154
+        },
+        "averageTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The average cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 120
+        },
+        "medianTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The median cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 115
+        },
+        "minimumTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The minimum cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 0
+        },
+        "maximumTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The maximum cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 365
+        },
+        "averageMinimumHeadways" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The average predicted headways, i.e. the average travel time between each pair of back-to-back trains given their current positions, and not taking any short-term delays/congestion into account. If there are less than two trains in active revenue service (`numTrains`), this will be null. (in minutes)",
+          "example" : 6.12
+        },
+        "averageTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The average observed frequency of trains arriving at stations, i.e. the average time between trains. This may be null if there is not sufficient data yet. (in minutes)",
+          "example" : 6.12
+        },
+        "expectedTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The expected time between trains, as calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>. (in minutes)",
+          "example" : 6
+        },
+        "averagePlatformWaitTime" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The average wait time on station platforms for a train, calculated by us using the following formula: `(μ (1 + σ² / μ²) / 2)`, where μ and σ are respectively the mean and standard deviation of the time headways between observed train arrivals at stations. We optimistically assume every rider is able to board the first train they're waiting for, which is not always the case, but WMATA does not make any real-time ridership data available for us to use. This may be null if there is not sufficient data yet. (in minutes)",
+          "example" : 3.12
+        },
+        "expectedPlatformWaitTime" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The expected platform wait time, as calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a> plugged into the formula mentioned in the description of `averagePlatformWaitTime`. (in minutes)",
+          "example" : 3
+        },
+        "trainFrequencyStatus" : {
+          "type" : "string",
+          "enum" : [ "OK", "SLOW", "DELAYED" ],
+          "description" : "The average train frequency (`averageTrainFrequency`) compared to the expected train frequency (`expectedTrainFrequency`). If the difference between the average train frequency minus the expected train frequency is less than or equal to one minute, OK is used; if the difference is greater than one minute but less than or equal to two minutes, DELAYED is used; otherwise, OK is used. This may be null if there is not sufficient data yet.",
+          "example" : "OK"
+        },
+        "platformWaitTimeTrendStatus" : {
+          "type" : "string",
+          "enum" : [ "DECREASING", "NEUTRAL", "INCREASING" ],
+          "description" : "The trend of the average platform wait time (`averagePlatformWaitTime`) over the last 15 minutes. This may be null if there is not sufficient data yet.",
+          "example" : "NEUTRAL"
+        },
+        "averageHeadwayAdherence" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Estimated headway adherence of trains, calculated by comparing observed train arrivals at each station to <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>, expressed as a percentage between 0 and 100. We consider a train to be adhering to scheduled headways if the time between the last train\\'s arrival and this train\\'s arrival is less than or equal to one full expected headway, plus 2 minutes. This may be null if there is not sufficient data yet.",
+          "example" : 66.6
+        },
+        "averageScheduleAdherence" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Estimated schedule adherence of trains, calculated by comparing observed train arrivals at each station to <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>, expressed as a percentage between 0 and 100. We consider a train as adhering to schedule if it arrives within (+/−) 2 minutes of schedule. This may be null if there is not sufficient data yet.",
+          "example" : 66.6
+        },
+        "standardDeviationTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Train spacing consistency, i.e. the observed variance in the frequency at which trains are arriving at stations. Technically, this is the standard deviation of those frequencies. This may be null if there is not sufficient data yet. (in minutes)",
+          "example" : 1.9
+        },
+        "expectedStandardDeviationTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Expected train spacing consistency, i.e. the expected variance in the frequency at which trains are arriving at stations.  Technically, this is the standard deviation of those expected frequencies calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>. (in minutes)",
+          "example" : 1.8
+        },
+        "directionMetricsByDirection" : {
+          "type" : "object",
+          "description" : "Line and direction-specific metrics by direction number.",
+          "properties" : {
+            "1" : {
+              "$ref" : "#/definitions/DirectionMetrics"
+            },
+            "2" : {
+              "type" : "object"
+            }
+          }
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this data is from.",
+          "example" : "2017-06-12T08:24:26.655-04:00"
+        }
+      }
+    },
+    "DirectionMetrics" : {
+      "type" : "object",
+      "description" : "Direction metrics for a specific line and direction. This may be null if there are no trains going in this direction.",
+      "properties" : {
+        "lineCode" : {
+          "type" : "string",
+          "enum" : [ "RD", "OR", "SV", "BL", "YL", "GR" ],
+          "description" : "The line code associated with this data.",
+          "example" : "OR"
+        },
+        "directionNumber" : {
+          "type" : "integer",
+          "format" : "int32",
+          "enum" : [ 1, 2 ],
+          "description" : "The direction number associated with this data.",
+          "example" : 1
+        },
+        "direction" : {
+          "type" : "string",
+          "description" : "A human-readable name for the cardinal direction trains are generally headed in.",
+          "example" : "Eastbound"
+        },
+        "towardsStationName" : {
+          "type" : "string",
+          "description" : "A human-readable name for the terminal station trains are generally headed towards.",
+          "example" : "New Carrollton"
+        },
+        "expectedNumTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active trains scheduled to be in revenue service, calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>.",
+          "example" : 11
+        },
+        "numTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active trains in revenue service.",
+          "example" : 11
+        },
+        "numEightCarTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active 8-car trains in revenue service.",
+          "example" : 5
+        },
+        "numDelayedTrains" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of active trains in revenue service with a cumulative trip time delay of 5 minutes or more, accumulated during their trip so far by holding and/or moving slowly.",
+          "example" : 1
+        },
+        "numCars" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of train cars in active revenue service, as calculated using `numTrains` and `numEightCarTrains`.",
+          "example" : 76
+        },
+        "averageTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The average cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 100
+        },
+        "medianTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The median cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 95
+        },
+        "minimumTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The minimum cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 0
+        },
+        "maximumTrainDelay" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The maximum cumulative trip time delay of trains in active revenue service. If there are no trains in active revenue service (`numTrains`), this will be null. (in seconds)",
+          "example" : 365
+        },
+        "averageMinimumHeadways" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The average predicted headways, i.e. the average travel time between each pair of back-to-back trains given their current positions, and not taking any short-term delays/congestion into account. If there are less than two trains in active revenue service (`numTrains`), this will be null. (in minutes)",
+          "example" : 6.12
+        },
+        "averageTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The average observed frequency of trains arriving at stations, i.e. the average time between trains. This may be null if there is not sufficient data yet. (in minutes)",
+          "example" : 6.12
+        },
+        "expectedTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The expected time between trains, as calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>. (in minutes)",
+          "example" : 6
+        },
+        "averagePlatformWaitTime" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The average wait time on station platforms for a train, calculated by us using the following formula: `(μ (1 + σ² / μ²) / 2)`, where μ and σ are respectively the mean and standard deviation of the time headways between observed train arrivals at stations. We optimistically assume every rider is able to board the first train they're waiting for, which is not always the case, but WMATA does not make any real-time ridership data available for us to use. This may be null if there is not sufficient data yet. (in minutes)",
+          "example" : 3.12
+        },
+        "expectedPlatformWaitTime" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The expected platform wait time, as calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a> plugged into the formula mentioned in the description of `averagePlatformWaitTime`. (in minutes)",
+          "example" : 3
+        },
+        "trainFrequencyStatus" : {
+          "type" : "string",
+          "enum" : [ "OK", "SLOW", "DELAYED" ],
+          "description" : "The average train frequency (`averageTrainFrequency`) compared to the expected train frequency (`expectedTrainFrequency`). If the difference between the average train frequency minus the expected train frequency is less than or equal to one minute, OK is used; if the difference is greater than one minute but less than or equal to two minutes, DELAYED is used; otherwise, OK is used. This may be null if there is not sufficient data yet.",
+          "example" : "OK"
+        },
+        "platformWaitTimeTrendStatus" : {
+          "type" : "string",
+          "enum" : [ "DECREASING", "NEUTRAL", "INCREASING" ],
+          "description" : "The trend of the average platform wait time (`averagePlatformWaitTime`) over the last 15 minutes. This may be null if there is not sufficient data yet.",
+          "example" : "NEUTRAL"
+        },
+        "averageHeadwayAdherence" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Estimated headway adherence of trains, calculated by comparing observed train arrivals at each station to <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>, expressed as a percentage between 0 and 100. We consider a train to be adhering to scheduled headways if the time between the last train\\'s arrival and this train\\'s arrival is less than or equal to one full expected headway, plus 2 minutes. This may be null if there is not sufficient data yet.",
+          "example" : 66.6
+        },
+        "averageScheduleAdherence" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Estimated schedule adherence of trains, calculated by comparing observed train arrivals at each station to <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>, expressed as a percentage between 0 and 100. We consider a train as adhering to schedule if it arrives within (+/−) 2 minutes of schedule. This may be null if there is not sufficient data yet.",
+          "example" : 66.6
+        },
+        "standardDeviationTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Train spacing consistency, i.e. the observed variance in the frequency at which trains are arriving at stations. Technically, this is the standard deviation of those frequencies. This may be null if there is not sufficient data yet. (in minutes)",
+          "example" : 1.9
+        },
+        "expectedStandardDeviationTrainFrequency" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Expected train spacing consistency, i.e. the expected variance in the frequency at which trains are arriving at stations.  Technically, this is the standard deviation of those expected frequencies calculated using <a href=\"https://www.wmata.com/about/developers/\" target=\"_blank\">WMATA's schedule data</a>. (in minutes)",
+          "example" : 1.8
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this data is from.",
+          "example" : "2017-06-12T08:24:26.655-04:00"
+        }
+      }
+    },
+    "TripInfo" : {
+      "type" : "object",
+      "properties" : {
+        "fromStationName" : {
+          "type" : "string",
+          "description" : "The name of the origin station (`fromStation`) of the trip.",
+          "example" : "Vienna"
+        },
+        "fromStationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the origin station (`fromStation`) of the trip.",
+          "example" : "K08"
+        },
+        "toStationName" : {
+          "type" : "string",
+          "description" : "The name of the destination station (`toStation`) of the trip.",
+          "example" : "Metro Center"
+        },
+        "toStationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the destination station (`toStation`) of the trip.",
+          "example" : "C01"
+        },
+        "tripStationCodes" : {
+          "type" : "array",
+          "description" : "An ordered list of RTU station codes of the stations visited on this trip. This list includes the origin station (`fromStation`) and the destination station (`toStation`) of the trip in the first and last positions in the list, respectively.",
+          "example" : [ "K08", "K07", "K06", "K05", "K04", "K03", "K02", "K01", "C05", "C04", "C03", "C02", "C01" ],
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "lineCodes" : {
+          "type" : "array",
+          "description" : "A list of line codes of lines that normally service this trip. This does not take current conditions into account and is basically static data; if different lines are servicing this trip than usual due to track work or something, those temporary service changes are not reflected here.",
+          "example" : [ "OR" ],
+          "items" : {
+            "type" : "string",
+            "enum" : [ "RD", "OR", "SV", "BL", "YL", "GR" ]
+          }
+        },
+        "expectedRideTime" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "How long this ride usually takes once aboard a train at the origin station (`fromStation`) of the trip and after that train has departed the station, based on the median trip time of up to 30 days' worth of data about this trip. (in minutes)",
+          "example" : 26.12
+        },
+        "predictedRideTime" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "How long this ride is predicted to take once aboard a train at the origin station (`fromStation`) of the trip and after that train has departed the station, based on current conditions and/or conditions in the recent past. This may be null if there is not sufficient data to make a prediction yet. (in minutes)",
+          "example" : 30.3303
+        },
+        "timeUntilNextTrain" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "Predicted wait time remaining from the origin station's (`fromStation`) platform for the next train to service this trip, based on current conditions and/or conditions in the recent past. This does not include scheduled train predictions. 0 means the next train is currently boarding at the origin station of the trip. This can be null if no such train prediction is available. (in minutes)",
+          "example" : 2.02
+        },
+        "timeSinceLastTrain" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "How long ago a train designated to service the destination station (`toStation`) of this trip last departed the origin station (`fromStation`). This can be null if no such train departure has been observed yet. (in minutes)",
+          "example" : 4.26
+        },
+        "fromStationTrainStatuses" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/TrainPrediction"
+          },
+          "description" : "An ordered list of all train predictions, relative to the origin station (`fromStation`) of this trip, for trains that are designated to service the destination station (`toStation`) of this trip, given current conditions. If this trip is currently being serviced by multiple lines, e.g. the Orange, Silver, and Blue lines, any predictions for trains across all those lines will be included in this list. If available, scheduled train predictions will also appear in this list. This list is ordered by estimated time of arrival at the origin station of this trip, in ascending order. This can be null."
+        },
+        "metroAlerts" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/MetroAlert"
+          },
+          "description" : "A list of active MetroAlerts that may be relevant to this trip, and stations and lines on this trip. Ordered by date issued or last updated; the most recently issued or updated MetroAlert will appear first in this list. This can be null."
+        },
+        "metroAlertKeywords" : {
+          "type" : "array",
+          "description" : "A set of keywords we've derived from all the MetroAlerts included in `metroAlerts` that we believe are important. We use heuristics so that MetroAlerts don't need to include the exact text of the keywords we're looking for to have one of our keywords appear in this list. Even so, sometimes this list may be empty. The same keyword will not appear twice. Ordered by last occurrence; the derived keywords from the most recent MetroAlerts will appear first in the list. This can be null.",
+          "example" : [ "long waits" ],
+          "items" : {
+            "$ref" : "#/definitions/Keywords"
+          }
+        },
+        "tweets" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Tweet"
+          },
+          "description" : "A list of tweets that may be relevant to this trip, and stations and lines on this trip. Ordered by the date they were tweeted; the most recent tweet will appear first in the list. This can be null."
+        },
+        "tweetKeywords" : {
+          "type" : "array",
+          "description" : "A set of keywords we've derived from all the tweets included in `tweets` that we believe are important. We use heuristics so that tweets don't need to include the exact text of the keywords we're looking for to have one of our keywords appear in this list. Even so, sometimes this list may be empty. The same keyword will not appear twice. Ordered by last occurrence; the derived keywords from the most recent tweets will appear first in the list. This can be null.",
+          "example" : [ "long waits" ],
+          "items" : {
+            "$ref" : "#/definitions/Keywords"
+          }
+        },
+        "fromStationElevatorOutages" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/ElevatorEscalatorOutage"
+          },
+          "description" : "A list of elevator outages at the origin station (`fromStation`) of the trip. Ordered by last updated; the most recently updated outage will appear first in the list. This can be null.",
+          "example" : [ ]
+        },
+        "fromStationEscalatorOutages" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/ElevatorEscalatorOutage"
+          },
+          "description" : "A list of escalator outages at the origin station (`fromStation`) of the trip. Ordered by last updated; the most recently updated outage will appear first in the list. This can be null.",
+          "example" : [ ]
+        },
+        "toStationElevatorOutages" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/ElevatorEscalatorOutage"
+          },
+          "description" : "A list of elevator outages at the destination station (`toStation`) of the trip. Ordered by last updated; the most recently updated outage will appear first in the list. This can be null.",
+          "example" : [ ]
+        },
+        "toStationEscalatorOutages" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/ElevatorEscalatorOutage"
+          },
+          "description" : "A list of escalator outages at the destination station (`toStation`) of the trip. Ordered by last updated; the most recently updated outage will appear first in the list. This can be null."
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this data was collectively retrieved or calculated.",
+          "example" : "2018-04-28T06:50:34-04:00"
+        }
+      }
+    },
+    "MetroAlert" : {
+      "type" : "object",
+      "properties" : {
+        "description" : {
+          "type" : "string",
+          "description" : "A brief description of the incident being described in this MetroAlert.",
+          "example" : "Orange/Blue Line: Trains operate every 24 min w/ single tracking btwn Eastern Market & Stadium-Armory due to scheduled maintenance."
+        },
+        "stationCodes" : {
+          "type" : "array",
+          "description" : "A list of RTU station codes of the stations relevant to the incident described in this MetroAlert.",
+          "example" : [ "D07", "D06", "D08" ],
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "lineCodes" : {
+          "type" : "array",
+          "description" : "A list of line codes relevant to the incident described in this MetroAlert.",
+          "example" : [ "OR", "SV" ],
+          "items" : {
+            "type" : "string",
+            "enum" : [ "RD", "OR", "SV", "BL", "YL", "GR" ]
+          }
+        },
+        "keywords" : {
+          "type" : "array",
+          "description" : "A set of keywords we've derived from this MetroAlert that we believe are important. We use heuristics so that MetroAlerts don't need to include the exact text of the keywords we're looking for to have one of our keywords appear in this list. Even so, sometimes this list may be empty. The same keyword will not appear twice.",
+          "example" : [ "long waits" ],
+          "items" : {
+            "$ref" : "#/definitions/Keywords"
+          }
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this MetroAlert was issued or last updated.",
+          "example" : "2018-04-28T06:49:57-04:00"
+        }
+      }
+    },
+    "Tweet" : {
+      "type" : "object",
+      "properties" : {
+        "twitterId" : {
+          "type" : "number",
+          "format" : "int64",
+          "description" : "The ID from Twitter for this tweet.",
+          "example" : 990273931222437888
+        },
+        "twitterIdString" : {
+          "type" : "string",
+          "description" : "The ID from Twitter for this tweet. Same as `twitterId` but represented as a string. Use this if you notice `twitterId` overflowing, which can happen if your language or libraries don't support signed 64-bit integers (as with JavaScript, for example).",
+          "example" : "990273931222437888"
+        },
+        "userId" : {
+          "type" : "number",
+          "format" : "int64",
+          "description" : "The ID from Twitter of the Twitter user who posted this tweet.",
+          "example" : 94625247
+        },
+        "text" : {
+          "type" : "string",
+          "description" : "The contents of the tweet.",
+          "example" : "@Metrorailinfo does Silver line exist? Been waiting at Ballston, no info about next Wiehle-bound anywhere. Just had a No Passenger come through instead, that was nice"
+        },
+        "stationCodes" : {
+          "type" : "array",
+          "description" : "A list of RTU station codes of the stations referenced in this tweet. If this tweet references a range of stations, e.g. \"between Vienna and Ballston\", all of the RTU station codes for those stations between and including Vienna and Ballston will be included in this list. We use fuzzy string matching and a bunch of other heuristics so that station names mentioned in tweets don't have to be properly spelled to be included here. Even so, sometimes this list may be empty.",
+          "example" : [ "K04" ],
+          "items" : {
+            "type" : "string"
+          }
+        },
+        "lineCodes" : {
+          "type" : "array",
+          "description" : "A list of line codes referenced in this tweet. We use heuristics so that line names or codes mentioned in tweets don't have to be properly spelled to be included in this list. We also derive line codes from station codes included in `stationCodes`. Even so, sometimes this list may be empty.",
+          "example" : [ "SV" ],
+          "items" : {
+            "type" : "string",
+            "enum" : [ "RD", "OR", "SV", "BL", "YL", "GR" ]
+          }
+        },
+        "keywords" : {
+          "type" : "array",
+          "description" : "A set of keywords we've derived from this tweet that we believe are important. We use heuristics so that tweets don't need to include the exact text of the keywords we're looking for to have one of our keywords appear in this list. Even so, sometimes this list may be empty. The same keyword will not appear twice.",
+          "example" : [ "long waits" ],
+          "items" : {
+            "$ref" : "#/definitions/Keywords"
+          }
+        },
+        "url" : {
+          "type" : "string",
+          "description" : "A fully-formed absolute URL to this tweet on Twitter. If the tweet has since been deleted from Twitter by the user or otherwise, this URL won't work.",
+          "example" : "https://twitter.com/180912906/status/990301719224573954"
+        },
+        "date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this tweet was posted to Twitter.",
+          "example" : "2018-04-28T06:49:57-04:00"
+        }
+      }
+    },
+    "ElevatorEscalatorOutage" : {
+      "type" : "object",
+      "properties" : {
+        "stationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the station with this outage.",
+          "example" : "C01"
+        },
+        "stationName" : {
+          "type" : "string",
+          "description" : "The name of the station and general location within the station of this outage.",
+          "example" : "Metro Center, G and 12th St Entrance"
+        },
+        "locationDescription" : {
+          "type" : "string",
+          "description" : "A more specific description of the location within the station of this outage.",
+          "example" : "Escalator between upper and lower platforms"
+        },
+        "symptomDescription" : {
+          "type" : "string",
+          "description" : "A brief description of why this outage is taking place.",
+          "example" : "Service Call"
+        },
+        "unitName" : {
+          "type" : "string",
+          "description" : "The name of the unit experiencing this outage.",
+          "example" : "C01N05"
+        },
+        "unitType" : {
+          "type" : "string",
+          "description" : "The type of unit experiencing this outage.",
+          "example" : "ESCALATOR",
+          "enum" : [ "ELEVATOR", "ESCALATOR" ]
+        },
+        "outOfServiceDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this unit was reported out of service.",
+          "example" : "2018-04-28T09:27:00-04:00"
+        },
+        "updatedDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime the outage details for this unit were last updated.",
+          "example" : "2018-04-28T09:30:19-04:00"
+        },
+        "estimatedReturnToServiceDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "The ISO 8601-formatted datetime this outage is expected to conclude. May be null if no estimate from WMATA is available.",
+          "example" : "2018-04-29T09:00:00-04:00"
+        }
+      }
+    },
+    "TrainPrediction" : {
+      "type" : "object",
+      "properties" : {
+        "trainId" : {
+          "type" : "string",
+          "description" : "If this prediction is based on real-time train data and not scheduled train data, i.e. if `isScheduled` is false, then this is the AIMS internal ID of the train, as defined by [WMATA's Train Positions API](https://developer.wmata.com/docs/services/5763fa6ff91823096cac1057/operations/5763fb35f91823096cac1058) as a three-digit string anywhere from 001 to 512; no two trains can have the same ID at the same time, so this is a unique identifier. Otherwise, this is a unique trip ID, like '58633'.",
+          "example" : "155"
+        },
+        "realTrainId" : {
+          "type" : "string",
+          "description" : "If this prediction is based on real-time train data and not scheduled train data, i.e. if `isScheduled` is false, then this is the real ID of the train, i.e. the same ID that WMATA uses operationally over the radio and in their train schedules, as a three-digit string anywhere from 000 to 999; in practice, two trains can (unforunately) have the same real ID at the same time, so this is not a unique identifier. Otherwise, this is null.",
+          "example" : "901"
+        },
+        "Car" : {
+          "type" : "string",
+          "description" : "The number of cars that make up this train. Can be 'N/A' indicating that for whatever reason, the number of cars is not known.",
+          "example" : "8"
+        },
+        "Destination" : {
+          "type" : "string",
+          "description" : "A human-readable name of the destination station of this train. Unlike [WMATA's Real-Time Rail Predictions API](https://developer.wmata.com/docs/services/547636a6f9182302184cda78/operations/547636a6f918230da855363f), this is the same as `DestinationName`, not an abbreviated version of the destination station name.",
+          "example" : "Vienna"
+        },
+        "DestinationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the destination station of this train.",
+          "example" : "K08"
+        },
+        "DestinationName" : {
+          "type" : "string",
+          "description" : "A human-readable name of the destination station of this train.",
+          "example" : "Vienna"
+        },
+        "Group" : {
+          "type" : "string",
+          "description" : "Indicates which side of the tracks ('1' for track 1, '2' for track 2) the train is on.",
+          "enum" : [ "1", "2" ],
+          "example" : "1"
+        },
+        "Line" : {
+          "type" : "string",
+          "description" : "The line code of the line this train is servicing.",
+          "enum" : [ "RD", "OR", "SV", "BL", "YL", "GR" ],
+          "example" : "OR"
+        },
+        "LocationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the station this train prediction is for or, if that's not applicable, the same station code as what's returned for `currentStationCode`.",
+          "example" : "C01"
+        },
+        "LocationName" : {
+          "type" : "string",
+          "description" : "The human-readable station name of the station this train prediction is for or, if that's not applicable, the same station name as what's returned for `currentStationName`.",
+          "example" : "Metro Center"
+        },
+        "Min" : {
+          "type" : "string",
+          "description" : "The predicted arrival time of the train at the station passed into the request to the API that returns this prediction--or, if that's not applicable, the predicted arrival time of the train at the station it will be servicing next--expressed in the nearest whole number of minutes (e.g. '3'), or as 'ARR' for arriving (if the prediction has the train less than or equal to 30 seconds away), or as 'BRD' for boarding. Alternatively, if this prediction is based on scheduled train data and not real-time train data, i.e. if `isScheduled` is true, a time is used instead--'11:30' for 11:30am or 11:30pm, for example. If an arrival prediction time is not available for this train, '?' will be returned instead.",
+          "example" : "1"
+        },
+        "parentMin" : {
+          "type" : "string",
+          "description" : "The predicted arrival time of the train at the station it will be servicing next, expressed in the nearest whole number of minutes (e.g. '3'), or as 'ARR' for arriving (if the prediction has the train less than or equal to 30 seconds away), or as 'BRD' for boarding. If an arrival prediction time is not available for this train, '?' will be returned instead. This is null if the request to the API that returns this prediction does not specify a station to get a prediction for; in that case, use `Min` instead. This is also null if this prediction is based on scheduled train data and not real-time train data, i.e. if `isScheduled` is true.",
+          "example" : "1"
+        },
+        "minutesAway" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The predicted arrival time of the train at the station it will be servicing next. It can be null if the previous station a train came from (`PreviousStationCode`) cannot be determined from its current or any previous position. (in minutes)",
+          "example" : 0.89
+        },
+        "maxMinutesAway" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The theoretical maximum predicted arrival time of the train at the station it will be servicing next from the station it serviced previously. This can be used to normalize `minutesAway`. This is null if this prediction is based on scheduled train data and not real-time train data, i.e. if `isScheduled` is true. It can also be null if the previous station a train came from (`PreviousStationCode`) cannot be determined from its current or any previous position. (in minutes)",
+          "example" : 1.12
+        },
+        "directionNumber" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "Like `Group`, this corresponds to either track 1 or 2, however this represents the direction the train is currently headed in, not the track it is currently on. Thus, this and `Group` can be different if, for example, this train is moving through a single-tracking area.",
+          "enum" : [ 1, 2 ],
+          "example" : 1
+        },
+        "isScheduled" : {
+          "type" : "boolean",
+          "description" : "True if this prediction is based on scheduled train data and not real-time train data, otherwise false.",
+          "example" : false
+        },
+        "numPositiveTags" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The number of positive tags, as made by MetroHero users, currently active for this train. See the `TrainTags` model defintion for more info.",
+          "example" : 1
+        },
+        "numNegativeTags" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The number of negative tags, as made by MetroHero users, currently active for this train. See the `TrainTags` model defintion for more info.",
+          "example" : 3
+        },
+        "trackNumber" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "Indicates which side of the tracks (1 for track 1, 2 for track 2) the train is on. The same as `Group`, but an integer instead of a string.",
+          "enum" : [ 1, 2 ],
+          "example" : 1
+        },
+        "currentStationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the current or next station this train is or will be servicing next.",
+          "example" : "C01"
+        },
+        "currentStationName" : {
+          "type" : "string",
+          "description" : "A human-readable name of the current or next station this train is or will be servicing next.",
+          "example" : "Metro Center"
+        },
+        "PreviousStationCode" : {
+          "type" : "string",
+          "description" : "The RTU station code of the previous station this train previously serviced last based on its current position. Note that this is not necessarily the actual station the train previously serviced if, for example, the train turned around after visiting its previous station.",
+          "example" : "D01"
+        },
+        "previousStationName" : {
+          "type" : "string",
+          "description" : "A human-readable name of the previous station this train previously serviced last based on its current position. Note that this is not necessarily the actual station the train previously serviced if, for example, the train turned around after visiting its previous station.",
+          "example" : "Federal Triangle"
+        },
+        "secondsSinceLastMoved" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The number of seconds since `Min` changed last. (in seconds)",
+          "example" : 65
+        },
+        "isCurrentlyHoldingOrSlow" : {
+          "type" : "boolean",
+          "description" : "True if `secondsSinceLastMoved` exceeds that of expected, i.e. `Min` has not changed for more than 30 seconds if `Min` is 'ARR', or, if `Min` is something else, if it has not changed for more than 60 seconds. Otherwise, it's false.",
+          "example" : true
+        },
+        "secondsOffSchedule" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The running total delay this train has accumulated during its trip so far, not including the current value of `secondsSinceLastMoved`. This resets once the train completes its trip. (in seconds)",
+          "example" : 145
+        },
+        "trainSpeed" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The estimated speed this train was last observed traveling at. This is very heuristic in nature and is calculated at the track circuit level by observing the train's movement between data updates from WMATA. (in miles per hour)",
+          "example" : 23
+        },
+        "isNotOnRevenueTrack" : {
+          "type" : "boolean",
+          "description" : "True if the train is on non-revenue track after having last been observed on revenue track, otherwise false. If this is true, the rest of this prediction (e.g. `Min`, `secondsSinceLastMoved`, etc) reflect the train's state when it was last observed on revenue track, not its current state on non-revenue track.",
+          "example" : false
+        },
+        "isKeyedDown" : {
+          "type" : "boolean",
+          "description" : "True if we believe the train to be powered down, i.e. if it hasn't moved from its current position for 30 minutes or more.",
+          "example" : false
+        },
+        "wasKeyedDown" : {
+          "type" : "boolean",
+          "description" : "True if we believe the train to have been powered down recently (not considering `isKeyedDown`), i.e. if at some point during its current trip from one station to another neighboring station, the train did not move from its position for 30 minutes or more.",
+          "example" : false
+        },
+        "distanceFromNextStation" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The estimated track distance away this train is from its next station stop, calculated using real track circuit lengths. This is 0 if the train is currently boarding at a station. Can be null if the next station stop (`LocationCode`) cannot be determined, or if an estimated distance is otherwise not available. (in feet)",
+          "example" : 502
+        },
+        "lat" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The estimated latitude of this train, based on the track circuits it is occupying. This can be null if data is temporarily unavailable. (in degrees)",
+          "example" : 38.89383299999999
+        },
+        "lon" : {
+          "type" : "number",
+          "format" : "double",
+          "description" : "The estimated longitude of this train, based on the track circuits it is occupying. This can be null if data is temporarily unavailable. (in degrees)",
+          "example" : -77.02806700000001
+        },
+        "direction" : {
+          "type" : "number",
+          "format" : "int32",
+          "description" : "The estimated heading from cardinal north of this train, from 0 (inclusive) to 360 (exclusive), based on the track circuits the train is occupying and the track circuits it will be occupying next given its direction of travel. This can be null if data is temporarily unavailable. (in degrees)",
+          "example" : 2
+        },
+        "areDoorsOpenOnLeft" : {
+          "type" : "boolean",
+          "description" : "True if the train's doors are open on the left side relative to the forward direction of the lead car of the train.",
+          "example" : false
+        },
+        "areDoorsOpenOnRight" : {
+          "type" : "boolean",
+          "description" : "True if the train's doors are open on the right side relative to the forward direction of the lead car of the train.",
+          "example" : false
+        },
+        "observedDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "description" : "A poorly-formatted date for when this prediction was made.",
+          "example" : "Aug 11, 2017 3:51:54 PM"
+        }
+      }
+    },
+    "TrainTags" : {
+      "type" : "object",
+      "properties" : {
+        "numTagsByType" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/NumTrainTagsByType"
+          },
+          "description" : "Ordered by tag type in descending order by number of tags."
+        },
+        "numPositiveTags" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of tags with positive sentiment currently active for the specified train.",
+          "example" : 1
+        },
+        "numNegativeTags" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of tags with negative sentiment currently active for the specified train.",
+          "example" : 2
+        }
+      }
+    },
+    "NumTrainTagsByType" : {
+      "type" : "object",
+      "properties" : {
+        "BAD_OPERATOR" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'BAD_OPERATOR' tags currently active for the specified train. A 'BAD_OPERATOR' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 1
+        },
+        "ISOLATED_CARS" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'ISOLATED_CARS' tags currently active for the specified train. A 'ISOLATED_CARS' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 1
+        },
+        "NEW_TRAIN" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'NEW_TRAIN' tags currently active for the specified train. A 'NEW_TRAIN' tag is considered to be of positive sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 1
+        },
+        "BROKEN_INTERCOM" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'BROKEN_INTERCOM' tags currently active for the specified train. A 'BROKEN_INTERCOM' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        },
+        "CROWDED" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'CROWDED' tags currently active for the specified train. A 'CROWDED' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "DISRUPTIVE_PASSENGER" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'DISRUPTIVE_PASSENGER' tags currently active for the specified train. A 'DISRUPTIVE_PASSENGER' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "EMPTY" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'EMPTY' tags currently active for the specified train. A 'EMPTY' tag is considered to be of positive sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "GOOD_OPERATOR" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'GOOD_OPERATOR' tags currently active for the specified train. A 'GOOD_OPERATOR' tag is considered to be of positive sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        },
+        "GOOD_RIDE" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'GOOD_RIDE' tags currently active for the specified train. A 'GOOD_RIDE' tag is considered to be of positive sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "NEEDS_WORK" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'NEEDS_WORK' tags currently active for the specified train. A 'NEEDS_WORK' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        },
+        "RECENTLY_OFFLOADED" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'RECENTLY_OFFLOADED' tags currently active for the specified train. A 'RECENTLY_OFFLOADED' tag is considered to be of negative sentiment, and tags of this type expire after 15 minutes.",
+          "example" : 0
+        },
+        "UNCOMFORTABLE_RIDE" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'UNCOMFORTABLE_RIDE' tags currently active for the specified train. A 'UNCOMFORTABLE_RIDE' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "UNCOMFORTABLE_TEMPS" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'UNCOMFORTABLE_TEMPS' tags currently active for the specified train. A 'UNCOMFORTABLE_TEMPS' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "WRONG_DESTINATION" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'WRONG_DESTINATION' tags currently active for the specified train. A 'WRONG_DESTINATION' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "WRONG_NUM_CARS" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'WRONG_NUM_CARS' tags currently active for the specified train. A 'WRONG_NUM_CARS' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        }
+      }
+    },
+    "StationTags" : {
+      "type" : "object",
+      "properties" : {
+        "numTagsByType" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/NumStationTagsByType"
+          },
+          "description" : "Ordered by tag type in descending order by number of tags."
+        },
+        "numPositiveTags" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of tags with positive sentiment currently active for the specified station.",
+          "example" : 1
+        },
+        "numNegativeTags" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of tags with negative sentiment currently active for the specified station.",
+          "example" : 1
+        }
+      }
+    },
+    "NumStationTagsByType" : {
+      "type" : "object",
+      "properties" : {
+        "FRIENDLY_OR_HELPFUL_STAFF" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'FRIENDLY_OR_HELPFUL_STAFF' tags currently active for the specified station. A 'FRIENDLY_OR_HELPFUL_STAFF' tag is considered to be of positive sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 1
+        },
+        "UNCOMFORTABLE_TEMPS" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'UNCOMFORTABLE_TEMPS' tags currently active for the specified station. A 'UNCOMFORTABLE_TEMPS' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 1
+        },
+        "AMPLE_SECURITY" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'AMPLE_SECURITY' tags currently active for the specified station. A 'AMPLE_SECURITY' tag is considered to be of positive sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "BROKEN_ELEVATOR" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'BROKEN_ELEVATOR' tags currently active for the specified station. A 'BROKEN_ELEVATOR' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        },
+        "BROKEN_ESCALATOR" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'BROKEN_ESCALATOR' tags currently active for the specified station. A 'BROKEN_ESCALATOR' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        },
+        "CROWDED" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'CROWDED' tags currently active for the specified station. A 'CROWDED' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "EMPTY" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'EMPTY' tags currently active for the specified station. A 'EMPTY' tag is considered to be of positive sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "FREE_HAND_SANITIZER_AVAILABLE" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'FREE_HAND_SANITIZER_AVAILABLE' tags currently active for the specified station. A 'FREE_MASKS_AVAILABLE' tag is considered to be of positive sentiment, and tags of this type expire after 1 day.",
+          "example" : 0
+        },
+        "FREE_MASKS_AVAILABLE" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'FREE_MASKS_AVAILABLE' tags currently active for the specified station. A 'FREE_MASKS_AVAILABLE' tag is considered to be of positive sentiment, and tags of this type expire after 1 day.",
+          "example" : 0
+        },
+        "LONG_WAITING_TIME" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'LONG_WAITING_TIME' tags currently active for the specified station. A 'LONG_WAITING_TIME' tag is considered to be of negative sentiment, and tags of this type expire after 15 minutes.",
+          "example" : 0
+        },
+        "NEEDS_WORK" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'NEEDS_WORK' tags currently active for the specified station. A 'NEEDS_WORK' tag is considered to be of negative sentiment, and tags of this type expire after 180 minutes.",
+          "example" : 0
+        },
+        "NO_FREE_HAND_SANITIZER" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'NO_FREE_HAND_SANITIZER' tags currently active for the specified station. A 'NO_FREE_HAND_SANITIZER' tag is considered to be of negative sentiment, and tags of this type expire after 1 day.",
+          "example" : 0
+        },
+        "NO_FREE_MASKS" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'NO_FREE_MASKS' tags currently active for the specified station. A 'NO_FREE_MASKS' tag is considered to be of negative sentiment, and tags of this type expire after 1 day.",
+          "example" : 0
+        },
+        "POSTED_TIMES_INACCURATE" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'POSTED_TIMES_INACCURATE' tags currently active for the specified station. A 'POSTED_TIMES_INACCURATE' tag is considered to be of negative sentiment, and tags of this type expire after 15 minutes.",
+          "example" : 0
+        },
+        "SMOKE_OR_FIRE" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'SMOKE_OR_FIRE' tags currently active for the specified station. A 'SMOKE_OR_FIRE' tag is considered to be of negative sentiment, and tags of this type expire after 30 minutes.",
+          "example" : 0
+        },
+        "UNFRIENDLY_OR_UNHELPFUL_STAFF" : {
+          "type" : "integer",
+          "format" : "int32",
+          "description" : "The number of 'UNFRIENDLY_OR_UNHELPFUL_STAFF' tags currently active for the specified station. A 'UNFRIENDLY_OR_UNHELPFUL_STAFF' tag is considered to be of negative sentiment, and tags of this type expire after 60 minutes.",
+          "example" : 0
+        }
+      }
+    },
+    "Keywords" : {
+      "type" : "string",
+      "enum" : [ "delays", "single-tracking", "trains holding", "long waits", "problems", "jams", "trains offloading", "being stuck", "being stopped", "trains moving slowly", "train speed problems", "crowded conditions", "congestion", "trains out of service", "trains bypassing", "malfunctions", "disabled trains", "track problems", "track work", "power outages", "smoke", "fire", "fire dept activity", "train derailments" ]
+    }
+  }
+}
