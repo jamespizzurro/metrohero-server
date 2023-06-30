@@ -4,6 +4,8 @@
 
 The setup instructions below are for Ubuntu 16.04. They may work for newer versions of Ubuntu or other Debian-based distros too, but some modifications of the commands provided may be required. YMMV.
 
+The latest official build of [the MetroHero webapp](https://github.com/jamespizzurro/metrohero-webapp) is included in this repository, so cloning and setting up that project isn't strictly necessary to get started with the MetroHero server. However, if you're looking to make any changes to the webapp, check out that repository for setup and usage instructions specific to the webapp.
+
 1. Install Oracle Java 9 JDK:
     ```
     sudo add-apt-repository ppa:webupd8team/java
