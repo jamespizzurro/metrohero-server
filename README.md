@@ -1,10 +1,12 @@
 # MetroHero Server
 
+The server used to power the MetroHero project, a (now defunct) app for WMATA Metrorail commuters and transit nerds in and around the DC area. This repository contains all the server-side code for the project. For MetroHero's client-side webapp source code, see [the MetroHero webapp repository](https://github.com/jamespizzurro/metrohero-webapp).
+
+The latest official build of [the MetroHero webapp](https://github.com/jamespizzurro/metrohero-webapp) is included in this repository, so cloning and setting up that project isn't strictly necessary to get started. However, if you're looking to make any changes to the webapp, check out that repository for setup and usage instructions specific to the webapp.
+
 ## Setup
 
 The setup instructions below are for Ubuntu 16.04. They may work for newer versions of Ubuntu or other Debian-based distros too, but some modifications of the commands provided may be required. YMMV.
-
-The latest official build of [the MetroHero webapp](https://github.com/jamespizzurro/metrohero-webapp) is included in this repository, so cloning and setting up that project isn't strictly necessary to get started with the MetroHero server. However, if you're looking to make any changes to the webapp, check out that repository for setup and usage instructions specific to the webapp.
 
 1. Install Oracle Java 9 JDK:
     ```
