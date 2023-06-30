@@ -327,7 +327,7 @@ The setup instructions below are for Ubuntu 16.04. They may work for newer versi
     ```
 
 7. Run the Spring Boot application targeting the `Application` Java class. This will populate the `metrohero` database. Once the application is running, stop it and continue to the next step to continue setup. See the Usage section of this README if you need help starting the server.
-8. Populate the `station_to_station_travel_time` table in the `metrohero` database
+8. Populate the `station_to_station_travel_time` table in the `metrohero` database:
     ```postgresql
    INSERT INTO public.station_to_station_travel_time (station_codes_key, distance, from_station_code, last_updated, to_station_code) VALUES ('K02_K01', 2086, 'K02', '2016-11-15 08:00:36.595000', 'K01') ON CONFLICT (station_codes_key) DO UPDATE SET distance = EXCLUDED.distance;
    INSERT INTO public.station_to_station_travel_time (station_codes_key, distance, from_station_code, last_updated, to_station_code) VALUES ('F04_F03', 3607, 'F04', '2016-12-02 10:14:36.255000', 'F03') ON CONFLICT (station_codes_key) DO UPDATE SET distance = EXCLUDED.distance;
